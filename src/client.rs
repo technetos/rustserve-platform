@@ -131,6 +131,65 @@ where
 }
 
 /// Utility macro for implementing the ServiceRequest trait.
+/// 
+/// ## Example
+///
+/// ```ignore
+/// macro_rules! github_request_response_impls {
+///     (
+///         method: $method:ident,
+///         request: $req:ty,
+///         response: $res:ty,
+///         for: $controller:ident,
+///      ) => {
+///         crate::client::impl_service_request!(
+///             method: $method,
+///             request: $req,
+///             response: $res,
+///             service_name: "github_tls",
+///             for: $controller,
+///         );
+///         impl<'a> ServiceResponse<'a, $req, $res> for $controller {}
+///         impl<'a> AdditionalServiceHeaders<'a, $req, $res> for $controller {
+///             fn additional_headers(
+///                 self: Arc<Self>,
+///             ) -> BoxFuture<'a, anyhow::Result<HashMap<String, String>>> {
+///                 Box::pin(async move {
+///                     Ok(HashMap::from([
+///                             ("host".into(), "api.github.com".into()),
+///                             ("Accept".into(), "application/vnd.github+json".into()),
+///                             ("X-GitHub-Api-Version".into(), "2022-11-28".into()),
+///                             ("User-Agent".into(), "curl/7.87.0".into()),
+///                     ]))
+///                 })
+///             }
+///         }
+///         impl<'a> CertificatePath<'a, $req, $res> for $controller {
+///             fn cert_path(self: Arc<Self>) -> BoxFuture<'a, anyhow::Result<String>> {
+///                 Box::pin(async move {
+///                     std::env::var("CA_CERT_BUNDLE").map_err(|e| e.into())
+///                 })
+///             }
+///         }
+///     }
+/// }
+/// 
+/// github_request_response_impls!(
+///     method: GET,
+///     request: (),
+///     response: GetGithubUserResponse,
+///     for: GithubClient,
+/// );
+/// #[derive(serde::Deserialize)]
+/// pub struct GetGithubUserResponse {
+///     pub id: u64,
+///     pub email: Option<String>,
+///     pub login: String,
+///     pub location: Option<String>,
+///     pub twitter_username: Option<String>,
+/// }
+/// ```
+
 #[macro_export]
 macro_rules! impl_service_request {
     (
