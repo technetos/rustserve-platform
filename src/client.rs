@@ -60,12 +60,12 @@ where
     Req: serde::Serialize + Send + 'a,
     Res: for<'de> serde::Deserialize<'de> + Send + 'a,
 {
-    let github_res = send_request(controller.clone(), &path, req).await?;
+    let res = send_request(controller.clone(), &path, req).await?;
 
-    if github_res.status().as_u16() == 200 {
-        Ok(controller.parse_response(github_res).await?)
+    if res.status().as_u16() == 200 {
+        Ok(controller.parse_response(res).await?)
     } else {
-        let (_, body) = github_res.into_parts();
+        let (_, body) = res.into_parts();
         let error_payload: Value = serde_json::from_slice(&body)?;
         Err(anyhow::anyhow!("{error_payload}"))
     }
