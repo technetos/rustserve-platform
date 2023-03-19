@@ -21,7 +21,8 @@ mod mtls;
 /// Common utility for all clients.
 pub mod client;
 
-pub use client::Registry;
+/// Runtime for services built using rustserve.
+pub mod runtime;
 
 /// A filter for POST requests that only allow the requests through if the route parameters contain
 /// the ID param.
@@ -111,10 +112,10 @@ pub fn default_filters<T: IdParam + NotFound + 'static>() -> Vec<Arc<dyn Filter>
 #[derive(serde::Serialize, serde::Deserialize)]
 pub struct EntityWithId<T: serde::Serialize> {
     /// The id of the entity
-    id: u64,
+    pub id: u64,
     /// The remaining fields of the entity
     #[serde(flatten)]
-    entity: T,
+    pub entity: T,
 }
 impl<T: serde::Serialize + for<'de> serde::Deserialize<'de>> EntityWithId<T> {
     /// Creates a new [`EntityWithId<T>`].
@@ -122,7 +123,7 @@ impl<T: serde::Serialize + for<'de> serde::Deserialize<'de>> EntityWithId<T> {
     /// # Examples
     ///
     /// ```
-    /// use people::EntityWithId;
+    /// use rustserve_platform::EntityWithId;
     ///
     /// struct Test {
     ///     name: String,
@@ -158,7 +159,7 @@ impl<'a, T: serde::Serialize> SeqApiResponse<Vec<T>> {
     /// # Examples
     ///
     /// ```
-    /// use people::SeqApiResponse;
+    /// use rustserve_platform::SeqApiResponse;
     ///
     /// struct TestEntity {
     ///     id: u64,
@@ -197,8 +198,10 @@ impl<'a, T: serde::Serialize> SeqApiResponse<Vec<T>> {
 /// Generic reusable entity response.
 #[derive(serde::Serialize, serde::Deserialize)]
 pub struct ApiResponse<T: serde::Serialize> {
-    entity_name: String,
-    entity: T,
+    /// Name of entity type
+    pub entity_name: String,
+    /// Inner entity stored within the response
+    pub entity: T,
 }
 
 impl<'a, T: serde::Serialize> ApiResponse<T> {
@@ -207,7 +210,7 @@ impl<'a, T: serde::Serialize> ApiResponse<T> {
     /// # Examples
     ///
     /// ```
-    /// use people::ApiResponse;
+    /// use rustserve_platform::ApiResponse;
     ///
     /// struct TestEntity {
     ///     id: u64,

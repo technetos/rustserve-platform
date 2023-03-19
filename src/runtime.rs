@@ -32,6 +32,8 @@ fn load_keys(path: &Path) -> io::Result<Vec<PrivateKey>> {
         .map(|mut keys| keys.drain(..).map(PrivateKey).collect())
 }
 
+/// Run the server at `server_addr` serving `routes` with name `service_name` with or without tls
+/// support.
 pub async fn drive(
     server_addr: SocketAddr,
     routes: Arc<Vec<Route>>,
